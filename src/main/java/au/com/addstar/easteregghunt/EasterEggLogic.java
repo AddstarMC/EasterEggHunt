@@ -174,12 +174,12 @@ public class EasterEggLogic extends ScoreTypeBase implements Listener
 		
 	private void updateLoadout(Minigame minigame)
 	{
-		List<String> oldFlags = mOldFlags.get(minigame.getName());
+		List<String> oldFlags = mOldFlags.get(minigame.getName(false));
 		
 		if(oldFlags != null && oldFlags.equals(minigame.getFlags()))
 			return;
 		oldFlags = new ArrayList<String>(minigame.getFlags());
-		mOldFlags.put(minigame.getName(), oldFlags);
+		mOldFlags.put(minigame.getName(false), oldFlags);
 		
 		PlayerLoadout loadout = minigame.getDefaultPlayerLoadout();
 		loadout.clearLoadout();
