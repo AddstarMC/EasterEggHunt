@@ -60,7 +60,7 @@ public class EasterEggLogic extends ScoreTypeBase implements Listener
 			return;
 		
 		DisplayManager manager = DisplayManager.getDisplayManager(event.getPlayer());
-		manager.hideBossBar();
+		manager.displayBossBarTemp(ChatColor.translateAlternateColorCodes('&', "&2\u2756 &f&lBad Luck &2\u2756"), 1, 30);
 	}
 	
 	@EventHandler(priority=EventPriority.MONITOR)
@@ -72,7 +72,7 @@ public class EasterEggLogic extends ScoreTypeBase implements Listener
 		for(MinigamePlayer player : event.getWinners())
 		{
 			DisplayManager manager = DisplayManager.getDisplayManager(player.getPlayer());
-			manager.hideBossBar();
+			manager.displayBossBarTemp(ChatColor.translateAlternateColorCodes('&', "&2\u2756 &f&lCongratulations &2\u2756"), 1, 30);
 		}
 	}
 	

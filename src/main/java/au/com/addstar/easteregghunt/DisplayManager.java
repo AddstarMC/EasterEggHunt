@@ -33,6 +33,8 @@ public class DisplayManager
 	private String mCurrentBossText;
 	private float mCurrentBossValue;
 	
+	private static Plugin mPlugin;
+	
 	private DisplayManager(Player player)
 	{
 		mPlayer = player;
@@ -82,6 +84,20 @@ public class DisplayManager
 			updateDragonStats(text, value);
 		
 		mShowBossBar = true;
+	}
+	
+	public void displayBossBarTemp(String text, float percent, int ticks)
+	{
+		displayBossBar(text, percent);
+		
+		Bukkit.getScheduler().runTaskLater(mPlugin, new Runnable()
+		{
+			@Override
+			public void run()
+			{
+				hideBossBar();
+			}
+		}, ticks);
 	}
 	
 	public void updateBossBarProgress(float percent)
@@ -216,6 +232,7 @@ public class DisplayManager
 		mLib = ProtocolLibrary.getProtocolManager();
 		
 		Bukkit.getPluginManager().registerEvents(new DisplayListener(), plugin);
+		mPlugin = plugin;
 	}
 	
 	public static DisplayManager getDisplayManager(Player player)
