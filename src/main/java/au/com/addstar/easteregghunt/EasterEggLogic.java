@@ -50,7 +50,7 @@ public class EasterEggLogic extends ScoreTypeBase implements Listener
 		updateLoadout(event.getMinigame());
 
 		DisplayManager manager = DisplayManager.getDisplayManager(event.getPlayer());
-		manager.displayBossBar("Easter Egg Hunt", 0);
+		manager.displayBossBar(ChatColor.translateAlternateColorCodes('&', "&2\u2756 &f&lEaster Egg Hunt &2\u2756"), 0);
 	}
 	
 	@EventHandler(priority=EventPriority.MONITOR)
@@ -82,7 +82,6 @@ public class EasterEggLogic extends ScoreTypeBase implements Listener
 		if(!event.getMinigame().getScoreType().equals("egghunt"))
 			return;
 		
-		new Exception().printStackTrace();
 		DisplayManager manager = DisplayManager.getDisplayManager(event.getPlayer().getPlayer());
 		
 		int found = event.getPlayer().getFlags().size();
@@ -93,13 +92,13 @@ public class EasterEggLogic extends ScoreTypeBase implements Listener
 		
 		if(found < total)
 		{
-			event.getPlayer().getPlayer().sendMessage("You found " + event.getFlag() + "!. You have " + (total - found) + " more to go!");
-			manager.displayBossBar("Easter Egg Hunt  " + found + "/" + total, progress);
+			event.getPlayer().getPlayer().sendMessage(ChatColor.DARK_GREEN + "[\u2756] " + ChatColor.AQUA + "You found " + ChatColor.GOLD + ChatColor.BOLD + event.getFlag() + ChatColor.AQUA + "! " + ChatColor.GOLD + ChatColor.BOLD.toString() + (total - found) + ChatColor.AQUA + " more to go!");
+			manager.displayBossBar(ChatColor.translateAlternateColorCodes('&', "&2\u2756 &f&lEaster Egg Hunt " + found + "/" + total + " &2\u2756"), progress);
 		}
 		else
 		{
-			event.getPlayer().getPlayer().sendMessage("You found " + event.getFlag() + "!. Thats it! Click the finish sign to win!");
-			manager.displayBossBar("Head back to the finish sign", 1);
+			event.getPlayer().getPlayer().sendMessage(ChatColor.DARK_GREEN + "[\u2756] " + ChatColor.AQUA + "You found " + ChatColor.GOLD + ChatColor.BOLD + event.getFlag() + ChatColor.AQUA + "! Thats it! " + ChatColor.YELLOW + "Click the finish sign to win!");
+			manager.displayBossBar(ChatColor.translateAlternateColorCodes('&', "&2\u2714 &f&lHead back to the finish sign &2\u2714"), 1);
 		}
 		
 		updateBook(event.getPlayer());
@@ -116,14 +115,42 @@ public class EasterEggLogic extends ScoreTypeBase implements Listener
 		meta.setPages(new ArrayList<String>());
 		
 		StringBuilder builder = new StringBuilder();
-		int lines = 0;
+		builder.append(ChatColor.translateAlternateColorCodes('&', "&2\u2756 &0Easter Egg Hunt &2\u2756\n"));
+		builder.append(ChatColor.DARK_GRAY);
+		
+		builder.append("\u2594\u2594\u2594\u2594\u2594\u2594\u2594\u2594\u2594\u2594\u2594\u2594\n");
+		
+		int lines = 2;
 		
 		for(String flag : player.getMinigame().getFlags())
 		{
 			if(player.getFlags().contains(flag))
-				builder.append(ChatColor.STRIKETHROUGH);
-			else
-				builder.append(ChatColor.RESET);
+				continue;
+			
+			builder.append(ChatColor.DARK_BLUE);
+			builder.append("  \u27AD ");
+			builder.append(ChatColor.BLACK);
+			builder.append(ChatColor.BOLD);
+			
+			builder.append(flag);
+			builder.append('\n');
+			++lines;
+			
+			if(lines >= 13)
+			{
+				meta.addPage(builder.toString());
+				lines = 0;
+				builder = new StringBuilder();
+			}
+		}
+		
+		for(String flag : player.getFlags())
+		{
+			builder.append(ChatColor.DARK_GRAY);
+			builder.append("  \u27AD ");
+			builder.append(ChatColor.DARK_GRAY);
+			builder.append(ChatColor.STRIKETHROUGH);
+			builder.append(ChatColor.BOLD);
 			
 			builder.append(flag);
 			builder.append('\n');
@@ -160,14 +187,22 @@ public class EasterEggLogic extends ScoreTypeBase implements Listener
 		ItemStack item = new ItemStack(Material.WRITTEN_BOOK);
 		BookMeta meta = (BookMeta) item.getItemMeta();
 		
-		meta.setTitle("Easter Egg Hunt Eggs");
-		meta.setAuthor("Addstar MC");
+		meta.setTitle(ChatColor.translateAlternateColorCodes('&', "&2\u2756 &f&lEggs to find &2\u2756"));
+		meta.setAuthor("Easter Egg Hunt");
 		
 		StringBuilder builder = new StringBuilder();
-		int lines = 0;
+		builder.append(ChatColor.translateAlternateColorCodes('&', "&2\u2756 &0Easter Egg Hunt &2\u2756\n"));
+		builder.append(ChatColor.DARK_GRAY);
+		
+		builder.append("\u2594\u2594\u2594\u2594\u2594\u2594\u2594\u2594\u2594\u2594\u2594\u2594\n");
+		int lines = 2;
 		
 		for(String flag : minigame.getFlags())
 		{
+			builder.append(ChatColor.DARK_BLUE);
+			builder.append("  \u27AD ");
+			builder.append(ChatColor.BLACK);
+			builder.append(ChatColor.BOLD);
 			builder.append(flag);
 			builder.append('\n');
 			++lines;
