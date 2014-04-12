@@ -31,6 +31,7 @@ import org.bukkit.util.Vector;
 
 import com.pauldavdesign.mineauz.minigames.MinigamePlayer;
 import com.pauldavdesign.mineauz.minigames.Minigames;
+import com.pauldavdesign.mineauz.minigames.gametypes.MinigameType;
 import com.pauldavdesign.mineauz.minigames.minigame.Minigame;
 import com.pauldavdesign.mineauz.minigames.scoring.ScoreType;
 
@@ -220,8 +221,10 @@ public class HuntPlugin extends JavaPlugin implements Listener
 			return;
 		
 		Minigame game = player.getMinigame();
-		if(!game.hasFlags() || player.getFlags().contains(name) || !game.getFlags().contains(name))
+		
+		if(!game.hasFlags() || player.getFlags().contains(name) || !game.getFlags().contains(name) || (game.getType() != MinigameType.SINGLEPLAYER && !game.hasStarted()))
 			return;
+		
 		
 		player.addFlag(name);
 		
