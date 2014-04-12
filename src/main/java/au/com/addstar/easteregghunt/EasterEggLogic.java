@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -101,6 +102,48 @@ public class EasterEggLogic extends ScoreTypeBase implements Listener
 			event.getPlayer().getPlayer().sendMessage("You found " + event.getFlag() + "!. Thats it! Click the finish sign to win!");
 			manager.displayBossBar("Head back to the finish sign", 1);
 		}
+		
+		updateBook(event.getPlayer());
+	}
+	
+	@SuppressWarnings( "deprecation" )
+	private void updateBook(MinigamePlayer player)
+	{
+		ItemStack item = player.getPlayer().getInventory().getItem(0);
+		if(item == null || item.getType() != Material.WRITTEN_BOOK)
+			return;
+		
+		BookMeta meta = (BookMeta) item.getItemMeta();
+		meta.setPages(new ArrayList<String>());
+		
+		StringBuilder builder = new StringBuilder();
+		int lines = 0;
+		
+		for(String flag : player.getMinigame().getFlags())
+		{
+			if(player.getFlags().contains(flag))
+				builder.append(ChatColor.STRIKETHROUGH);
+			else
+				builder.append(ChatColor.RESET);
+			
+			builder.append(flag);
+			builder.append('\n');
+			++lines;
+			
+			if(lines >= 13)
+			{
+				meta.addPage(builder.toString());
+				lines = 0;
+				builder = new StringBuilder();
+			}
+		}
+		
+		if(lines > 0)
+			meta.addPage(builder.toString());
+		
+		item.setItemMeta(meta);
+		
+		player.getPlayer().updateInventory();
 	}
 		
 	private void updateLoadout(Minigame minigame)
