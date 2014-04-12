@@ -74,11 +74,22 @@ public class EasterEggLogic extends ScoreTypeBase implements Listener
 		
 		DisplayManager manager = DisplayManager.getDisplayManager(event.getPlayer().getPlayer());
 		
-		float progress = event.getPlayer().getFlags().size() / (float)event.getMinigame().getFlags().size();
+		int found = event.getPlayer().getFlags().size();
+		int total = event.getMinigame().getFlags().size();
+		float progress = found / (float)total;
 		if(progress > 1)
 			progress = 1;
 		
-		manager.updateBossBarProgress(progress);
+		if(found < total)
+		{
+			event.getPlayer().getPlayer().sendMessage("You found " + event.getFlag() + "!. You have " + (total - found) + " more to go!");
+			manager.displayBossBar("Easter Egg Hunt  " + found + "/" + total, progress);
+		}
+		else
+		{
+			event.getPlayer().getPlayer().sendMessage("You found " + event.getFlag() + "!. Thats it! Click the finish sign to win!");
+			manager.displayBossBar("Head back to the finish sign", 1);
+		}
 	}
 			
 }
