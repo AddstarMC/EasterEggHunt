@@ -61,6 +61,7 @@ public class EasterEggLogic extends ScoreTypeBase implements Listener
 		
 		DisplayManager manager = DisplayManager.getDisplayManager(event.getPlayer());
 		manager.displayBossBarTemp(ChatColor.translateAlternateColorCodes('&', "&2\u2756 &f&lBad Luck &2\u2756"), 1, 30);
+		manager.clearEffects();
 	}
 	
 	@EventHandler(priority=EventPriority.MONITOR)
@@ -73,6 +74,7 @@ public class EasterEggLogic extends ScoreTypeBase implements Listener
 		{
 			DisplayManager manager = DisplayManager.getDisplayManager(player.getPlayer());
 			manager.displayBossBarTemp(ChatColor.translateAlternateColorCodes('&', "&2\u2756 &f&lCongratulations &2\u2756"), 1, 30);
+			manager.clearEffects();
 		}
 	}
 	
@@ -100,6 +102,8 @@ public class EasterEggLogic extends ScoreTypeBase implements Listener
 			event.getPlayer().getPlayer().sendMessage(ChatColor.DARK_GREEN + "[\u2756] " + ChatColor.AQUA + "You found " + ChatColor.GOLD + ChatColor.BOLD + event.getFlag() + ChatColor.AQUA + "! Thats it! " + ChatColor.YELLOW + "Click the finish sign to win!");
 			manager.displayBossBar(ChatColor.translateAlternateColorCodes('&', "&2\u2714 &f&lHead back to the finish sign &2\u2714"), 1);
 		}
+		
+		manager.addEffect("portal", event.getLocation(), 0.2f, 4, 0, 1);
 		
 		updateBook(event.getPlayer());
 	}

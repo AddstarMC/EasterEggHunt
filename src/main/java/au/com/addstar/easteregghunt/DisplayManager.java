@@ -1,6 +1,8 @@
 package au.com.addstar.easteregghunt;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.HashMap;
+import java.util.Random;
 import java.util.WeakHashMap;
 
 import org.apache.commons.lang.Validate;
@@ -12,6 +14,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.scheduler.BukkitTask;
 
 import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.ProtocolLibrary;
@@ -22,9 +25,12 @@ import com.comphenix.protocol.wrappers.WrappedDataWatcher;
 public class DisplayManager
 {
 	private static final int ENTITY_DRAGON_ID = 999999999;
+	private static final int EFFECT_DELAY = 5;
 	
 	private static WeakHashMap<Player, DisplayManager> mAllManagers = new WeakHashMap<Player, DisplayManager>();
 	private static ProtocolManager mLib;
+	private static Random mRand = new Random();
+	private static Plugin mPlugin;
 	
 	private Player mPlayer;
 	private Location mLocation;
@@ -33,13 +39,18 @@ public class DisplayManager
 	private String mCurrentBossText;
 	private float mCurrentBossValue;
 	
-	private static Plugin mPlugin;
+	private HashMap<Integer, Effect> mEffects;
+	private int mNextEffectId;
+	private BukkitTask mEffectTimer;
 	
 	private DisplayManager(Player player)
 	{
 		mPlayer = player;
 		mLocation = mPlayer.getLocation();
 		mShowBossBar = false;
+		
+		mEffects = new HashMap<Integer, DisplayManager.Effect>();
+		mNextEffectId = 0;
 	}
 	
 	public void updateDisplays()
@@ -225,6 +236,92 @@ public class DisplayManager
 		}
 	}
 	
+	public int addEffect(String type, Location location, float speed, int count, float spread, int emitCount)
+	{
+		Effect effect = new Effect();
+		effect.id = mNextEffectId++;
+		effect.type = type;
+		effect.location = location;
+		effect.speed = speed;
+		effect.count = count;
+		effect.spread = spread;
+		effect.emits = emitCount;
+		
+		mEffects.put(effect.id, effect);
+		
+		if(mEffectTimer == null)
+			mEffectTimer = Bukkit.getScheduler().runTaskTimer(mPlugin, new EffectTimer(), EFFECT_DELAY, EFFECT_DELAY);
+		
+		return effect.id;
+	}
+	
+	public void removeEffect(int id)
+	{
+		mEffects.remove(id);
+		if(mEffects.isEmpty() && mEffectTimer != null)
+		{
+			mEffectTimer.cancel();
+			mEffectTimer = null;
+		}
+	}
+	
+	public void clearEffects()
+	{
+		mEffects.clear();
+		
+		if(mEffectTimer != null)
+		{
+			mEffectTimer.cancel();
+			mEffectTimer = null;
+		}
+	}
+	
+	private void doEffects()
+	{
+		for(Effect effect : mEffects.values())
+		{
+			if(!mPlayer.getWorld().equals(effect.location.getWorld()))
+				continue;
+			
+			if(mPlayer.getLocation().distance(effect.location) > 16)
+				continue;
+			
+			for(int i = 0; i < effect.emits; ++i)
+			{
+				float offX = (mRand.nextFloat() - 0.5f) * 2 * effect.spread;
+				float offY = (mRand.nextFloat() - 0.5f) * 2 * effect.spread;
+				float offZ = (mRand.nextFloat() - 0.5f) * 2 * effect.spread;
+				
+				spawnParticles(effect.location, effect.type, offX, offY, offZ, effect.speed, effect.count);
+			}
+		}
+	}
+	
+	private void spawnParticles(Location location, String effect, float offX, float offY, float offZ, float speed, int count)
+	{
+		PacketContainer packet = mLib.createPacket(PacketType.Play.Server.WORLD_PARTICLES);
+		packet.getStrings().write(0, effect);
+		packet.getFloat().write(0, (float)location.getX());
+		packet.getFloat().write(1, (float)location.getY());
+		packet.getFloat().write(2, (float)location.getZ());
+		
+		packet.getFloat().write(3, offX);
+		packet.getFloat().write(4, offY);
+		packet.getFloat().write(5, offZ);
+		
+		packet.getFloat().write(6, speed);
+		packet.getIntegers().write(0, count);
+		
+		try
+		{
+			mLib.sendServerPacket(mPlayer, packet, false);
+		}
+		catch ( InvocationTargetException e )
+		{
+			e.printStackTrace();
+		}
+	}
+	
 	public static void initialize(Plugin plugin)
 	{
 		Validate.isTrue(mLib == null);
@@ -255,6 +352,26 @@ public class DisplayManager
 			DisplayManager manager = mAllManagers.get(event.getPlayer());
 			if(manager != null)
 				manager.updateDisplays();
+		}
+	}
+	
+	private static class Effect
+	{
+		public String type;
+		public Location location;
+		public int id;
+		public int count;
+		public float spread;
+		public int emits;
+		public float speed;
+	}
+	
+	private class EffectTimer implements Runnable
+	{
+		@Override
+		public void run()
+		{
+			doEffects();
 		}
 	}
 }

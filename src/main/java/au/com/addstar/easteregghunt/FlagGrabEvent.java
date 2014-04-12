@@ -1,5 +1,6 @@
 package au.com.addstar.easteregghunt;
 
+import org.bukkit.Location;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 
@@ -24,12 +25,14 @@ public class FlagGrabEvent extends Event
 	private MinigamePlayer mPlayer;
 	private String mFlag;
 	private Minigame mMinigame;
+	private Location mLocation;
 	
-	public FlagGrabEvent(MinigamePlayer player, String flag, Minigame minigame)
+	public FlagGrabEvent(MinigamePlayer player, String flag, Minigame minigame, Location location)
 	{
 		mPlayer = player;
 		mFlag = flag;
 		mMinigame = minigame;
+		mLocation = location;
 	}
 	
 	public MinigamePlayer getPlayer()
@@ -45,5 +48,10 @@ public class FlagGrabEvent extends Event
 	public Minigame getMinigame()
 	{
 		return mMinigame;
+	}
+	
+	public Location getLocation()
+	{
+		return mLocation;
 	}
 }
