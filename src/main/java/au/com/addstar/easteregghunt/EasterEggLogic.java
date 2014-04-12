@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.event.EventHandler;
@@ -28,7 +27,6 @@ public class EasterEggLogic extends ScoreTypeBase implements Listener
 	
 	public EasterEggLogic(Plugin plugin)
 	{
-		Bukkit.getPluginManager().registerEvents(this, plugin);
 		mOldFlags = new HashMap<String, List<String>>();
 	}
 	
@@ -84,6 +82,7 @@ public class EasterEggLogic extends ScoreTypeBase implements Listener
 		if(!event.getMinigame().getScoreType().equals("egghunt"))
 			return;
 		
+		new Exception().printStackTrace();
 		DisplayManager manager = DisplayManager.getDisplayManager(event.getPlayer().getPlayer());
 		
 		int found = event.getPlayer().getFlags().size();

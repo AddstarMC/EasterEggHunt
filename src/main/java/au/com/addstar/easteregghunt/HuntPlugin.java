@@ -224,6 +224,7 @@ public class HuntPlugin extends JavaPlugin implements Listener
 			return;
 		
 		player.addFlag(name);
+		
 		event.getPlayer().playSound(event.getPlayer().getLocation(), Sound.ITEM_PICKUP, 1, 1);
 		
 		Bukkit.getPluginManager().callEvent(new FlagGrabEvent(player, name, game));
