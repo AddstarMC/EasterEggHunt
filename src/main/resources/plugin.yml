@@ -18,3 +18,7 @@ commands:
     aliases: [removeegg]
     permission: easteregghunt.create
     usage: /<command>
+  removealleastereggs:
+    aliases: [removealleggs]
+    permission: easteregghunt.create
+    usage: /<command> [radius]

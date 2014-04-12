@@ -104,6 +104,65 @@ public class HuntPlugin extends JavaPlugin implements Listener
 			
 			return true;
 		}
+		else if(command.getName().equals("removealleastereggs"))
+		{
+			if(args.length != 0 && args.length != 1)
+				return false;
+			
+			if(!(sender instanceof Player))
+			{
+				sender.sendMessage(ChatColor.RED + "You must be in-game to do this");
+				return true;
+			}
+			
+			int radius = -1;
+			
+			if(args.length == 1)
+			{
+				try
+				{
+					radius = Integer.parseInt(args[0]);
+					if(radius <= 0)
+					{
+						sender.sendMessage(ChatColor.RED + "Radius must be a positive number");
+						return true;
+					}
+				}
+				catch(NumberFormatException e)
+				{
+					sender.sendMessage(ChatColor.RED + "Radius must be a positive number");
+					return true;
+				}
+			}
+			
+			if(radius == -1)
+			{
+				for(Item item : ((Player)sender).getWorld().getEntitiesByClass(Item.class))
+				{
+					if(isEasterEgg(item))
+						item.remove();
+				}
+				
+				sender.sendMessage(ChatColor.GREEN + "Removed all easter eggs from this world");
+				sender.sendMessage(ChatColor.GRAY + "WARNING: Will not have removed eggs in unloaded chunks");
+			}
+			else
+			{
+				for(Entity ent : ((Player)sender).getNearbyEntities(radius, radius, radius))
+				{
+					if(ent instanceof Item)
+					{
+						if(isEasterEgg((Item)ent))
+							ent.remove();
+					}
+				}
+				
+				sender.sendMessage(ChatColor.GREEN + "Removed all easter eggs within a " + radius + " block radius from you.");
+				sender.sendMessage(ChatColor.GRAY + "WARNING: Will not have removed eggs in unloaded chunks");
+			}
+			
+			return true;
+		}
 		
 		return false;
 	}
