@@ -1,0 +1,20 @@
+name: EasterEggHunt
+version: ${pom.version}
+
+author: Schmoller
+
+main: au.com.addstar.easteregghunt.HuntPlugin
+
+permissions:
+  easteregghunt.create:
+    default: op
+
+commands:
+  createeasteregg:
+    aliases: [createegg, easteregg]
+    permission: easteregghunt.create
+    usage: /<command> <name> 
+  removeeasteregg:
+    aliases: [removeegg]
+    permission: easteregghunt.create
+    usage: /<command>
