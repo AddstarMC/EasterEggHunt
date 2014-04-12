@@ -48,7 +48,7 @@ public class DisplayManager
 		{
 			if(mLocation.getWorld() != loc.getWorld())
 			{
-				int value = (int)Math.min(Math.max(mCurrentBossValue * 200, 0), 200);
+				int value = (int)Math.min(Math.max(mCurrentBossValue * 200, 1), 200);
 				spawnFakeDragon(mCurrentBossText, value);
 			}
 			else
@@ -57,7 +57,7 @@ public class DisplayManager
 				
 				if(dist >= 640000)
 				{
-					int value = (int)Math.min(Math.max(mCurrentBossValue * 200, 0), 200);
+					int value = (int)Math.min(Math.max(mCurrentBossValue * 200, 1), 200);
 					spawnFakeDragon(mCurrentBossText, value);
 					mLocation = loc;
 				}
@@ -74,9 +74,9 @@ public class DisplayManager
 	{
 		mCurrentBossText = text;
 		mCurrentBossValue = percent;
-		int value = (int)Math.min(Math.max(percent * 200, 0), 200);
+		int value = (int)Math.min(Math.max(percent * 200, 1), 200);
 		
-		if(mShowBossBar)
+		if(!mShowBossBar)
 			spawnFakeDragon(text, value);
 		else
 			updateDragonStats(text, value);
@@ -87,9 +87,9 @@ public class DisplayManager
 	public void updateBossBarProgress(float percent)
 	{
 		mCurrentBossValue = percent;
-		int value = (int)Math.min(Math.max(percent * 200, 0), 200);
+		int value = (int)Math.min(Math.max(percent * 200, 1), 200);
 		
-		if(mShowBossBar)
+		if(!mShowBossBar)
 			spawnFakeDragon(mCurrentBossText, value);
 		else
 			updateDragonStats(mCurrentBossText, value);
