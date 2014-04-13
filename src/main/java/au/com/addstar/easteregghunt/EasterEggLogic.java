@@ -9,11 +9,13 @@ import org.bukkit.Material;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.plugin.Plugin;
 
 import com.pauldavdesign.mineauz.minigames.MinigamePlayer;
+import com.pauldavdesign.mineauz.minigames.Minigames;
 import com.pauldavdesign.mineauz.minigames.PlayerLoadout;
 import com.pauldavdesign.mineauz.minigames.events.EndMinigameEvent;
 import com.pauldavdesign.mineauz.minigames.events.JoinMinigameEvent;
@@ -108,14 +110,44 @@ public class EasterEggLogic extends ScoreTypeBase implements Listener
 		updateBook(event.getPlayer());
 	}
 	
+	@EventHandler(priority=EventPriority.MONITOR)
+	private void onRespawn(PlayerRespawnEvent event)
+	{
+		MinigamePlayer player = Minigames.plugin.pdata.getMinigamePlayer(event.getPlayer());
+		if(player == null || !player.isInMinigame())
+			return;
+		
+		Minigame game = player.getMinigame();
+		
+		if(!game.getScoreType().equals("egghunt"))
+			return;
+		
+		updateBook(player);
+	}
+	
 	@SuppressWarnings( "deprecation" )
 	private void updateBook(MinigamePlayer player)
 	{
-		ItemStack item = player.getPlayer().getInventory().getItem(0);
-		if(item == null || item.getType() != Material.WRITTEN_BOOK)
+		ItemStack item = null;
+		BookMeta meta = null;
+		
+		for(ItemStack i : player.getPlayer().getInventory().all(Material.WRITTEN_BOOK).values())
+		{
+			if(!i.hasItemMeta())
+				continue;
+			
+			meta = (BookMeta) i.getItemMeta();
+			
+			if(!meta.hasTitle() || !meta.getTitle().equals(ChatColor.translateAlternateColorCodes('&', "&2\u2756 &f&lEggs to find &2\u2756")))
+				continue;
+			
+			item = i;
+			break;
+		}
+		
+		if(item == null)
 			return;
 		
-		BookMeta meta = (BookMeta) item.getItemMeta();
 		meta.setPages(new ArrayList<String>());
 		
 		StringBuilder builder = new StringBuilder();

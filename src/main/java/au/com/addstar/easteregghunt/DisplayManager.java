@@ -13,6 +13,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitTask;
 
@@ -352,6 +353,27 @@ public class DisplayManager
 			DisplayManager manager = mAllManagers.get(event.getPlayer());
 			if(manager != null)
 				manager.updateDisplays();
+		}
+		
+		@EventHandler(priority=EventPriority.MONITOR, ignoreCancelled=true)
+		private void onPlayerRespawn(PlayerRespawnEvent event)
+		{
+			final DisplayManager manager = mAllManagers.get(event.getPlayer());
+			if(manager != null)
+			{
+				if(manager.mShowBossBar)
+				{
+					Bukkit.getScheduler().runTaskLater(mPlugin, new Runnable()
+					{
+						@Override
+						public void run()
+						{
+							int value = (int)Math.min(Math.max(manager.mCurrentBossValue * 200, 1), 200);
+							manager.spawnFakeDragon(manager.mCurrentBossText, value);
+						}
+					}, 5);
+				}
+			}
 		}
 	}
 	
