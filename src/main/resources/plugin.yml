@@ -10,15 +10,12 @@ permissions:
     default: op
 
 commands:
-  createeasteregg:
-    aliases: [createegg, easteregg]
+  eecreate:
     permission: easteregghunt.create
     usage: /<command> <name> 
-  removeeasteregg:
-    aliases: [removeegg]
+  eeremove:
     permission: easteregghunt.create
     usage: /<command>
-  removealleastereggs:
-    aliases: [removealleggs]
+  eeremoveall:
     permission: easteregghunt.create
     usage: /<command> [radius]

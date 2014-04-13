@@ -55,7 +55,7 @@ public class HuntPlugin extends JavaPlugin implements Listener
 	@Override
 	public boolean onCommand( CommandSender sender, Command command, String label, String[] args )
 	{
-		if(command.getName().equals("createeasteregg"))
+		if(command.getName().equals("eecreate"))
 		{
 			if(args.length != 1)
 				return false;
@@ -71,7 +71,7 @@ public class HuntPlugin extends JavaPlugin implements Listener
 			
 			return true;
 		}
-		else if(command.getName().equals("removeeasteregg"))
+		else if(command.getName().equals("eeremove"))
 		{
 			if(args.length != 0)
 				return false;
@@ -104,7 +104,7 @@ public class HuntPlugin extends JavaPlugin implements Listener
 			
 			return true;
 		}
-		else if(command.getName().equals("removealleastereggs"))
+		else if(command.getName().equals("eeremoveall"))
 		{
 			if(args.length != 0 && args.length != 1)
 				return false;
