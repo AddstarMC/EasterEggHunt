@@ -5,7 +5,7 @@ author: Schmoller
 
 main: au.com.addstar.easteregghunt.HuntPlugin
 
-depends: [Minigames,ProtocolLib]
+depend: [Minigames,ProtocolLib]
 
 permissions:
   easteregghunt.create:
