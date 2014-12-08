@@ -4,8 +4,8 @@ import org.bukkit.Location;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 
-import com.pauldavdesign.mineauz.minigames.MinigamePlayer;
-import com.pauldavdesign.mineauz.minigames.minigame.Minigame;
+import au.com.mineauz.minigames.MinigamePlayer;
+import au.com.mineauz.minigames.minigame.Minigame;
 
 public class FlagGrabEvent extends Event
 {

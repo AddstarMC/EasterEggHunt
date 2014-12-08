@@ -23,17 +23,18 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.ItemDespawnEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerPickupItemEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.material.SpawnEgg;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.Vector;
 
-import com.pauldavdesign.mineauz.minigames.MinigamePlayer;
-import com.pauldavdesign.mineauz.minigames.Minigames;
-import com.pauldavdesign.mineauz.minigames.gametypes.MinigameType;
-import com.pauldavdesign.mineauz.minigames.minigame.Minigame;
-import com.pauldavdesign.mineauz.minigames.scoring.ScoreType;
+import au.com.mineauz.minigames.MinigamePlayer;
+import au.com.mineauz.minigames.Minigames;
+import au.com.mineauz.minigames.gametypes.MinigameType;
+import au.com.mineauz.minigames.mechanics.GameMechanics;
+import au.com.mineauz.minigames.minigame.Minigame;
 
 public class HuntPlugin extends JavaPlugin implements Listener
 {
@@ -48,8 +49,8 @@ public class HuntPlugin extends JavaPlugin implements Listener
 	public void onEnable()
 	{
 		Bukkit.getPluginManager().registerEvents(this, this);
-		DisplayManager.initialize(this);
-		ScoreType.addScoreType(new EasterEggLogic(this));
+		DisplayManager.init(this);
+		GameMechanics.addGameMechanic(new EasterEggLogic(this));
 	}
 	
 	@Override
@@ -297,5 +298,11 @@ public class HuntPlugin extends JavaPlugin implements Listener
 	{
 		if(isEasterEgg(event.getEntity()))
 			event.setCancelled(true);
+	}
+	
+	@EventHandler
+	private void onPlayerQuit(PlayerQuitEvent event)
+	{
+		DisplayManager.unload(event.getPlayer());
 	}
 }

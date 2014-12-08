@@ -1,11 +1,14 @@
 package au.com.addstar.easteregghunt;
 
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -13,80 +16,155 @@ import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.scoreboard.DisplaySlot;
+import org.bukkit.scoreboard.Objective;
+import org.bukkit.scoreboard.Scoreboard;
 
-import com.pauldavdesign.mineauz.minigames.MinigamePlayer;
-import com.pauldavdesign.mineauz.minigames.Minigames;
-import com.pauldavdesign.mineauz.minigames.PlayerLoadout;
-import com.pauldavdesign.mineauz.minigames.events.EndMinigameEvent;
-import com.pauldavdesign.mineauz.minigames.events.JoinMinigameEvent;
-import com.pauldavdesign.mineauz.minigames.events.QuitMinigameEvent;
-import com.pauldavdesign.mineauz.minigames.minigame.Minigame;
-import com.pauldavdesign.mineauz.minigames.scoring.ScoreTypeBase;
+import au.com.addstar.monolith.BossDisplay;
+import au.com.addstar.monolith.MonoPlayer;
+import au.com.addstar.monolith.ParticleEffect;
+import au.com.mineauz.minigames.MinigamePlayer;
+import au.com.mineauz.minigames.Minigames;
+import au.com.mineauz.minigames.PlayerLoadout;
+import au.com.mineauz.minigames.gametypes.MinigameType;
+import au.com.mineauz.minigames.mechanics.GameMechanicBase;
+import au.com.mineauz.minigames.minigame.Minigame;
+import au.com.mineauz.minigames.minigame.modules.LoadoutModule;
+import au.com.mineauz.minigames.minigame.modules.MinigameModule;
 
-public class EasterEggLogic extends ScoreTypeBase implements Listener
+public class EasterEggLogic extends GameMechanicBase implements Listener
 {
 	private HashMap<String, List<String>> mOldFlags;
+	private Plugin mPlugin;
 	
 	public EasterEggLogic(Plugin plugin)
 	{
+		mPlugin = plugin;
+		
 		mOldFlags = new HashMap<String, List<String>>();
 	}
-	
+
 	@Override
 	public void balanceTeam( List<MinigamePlayer> players, Minigame mgm )
 	{
 	}
 
 	@Override
-	public String getType()
+	public String getMechanic()
 	{
 		return "egghunt";
 	}
-
-	@EventHandler(priority=EventPriority.MONITOR)
-	private void onMinigameJoin(final JoinMinigameEvent event)
+	
+	@Override
+	public boolean checkCanStart( Minigame minigame, MinigamePlayer player )
 	{
-		if(!event.getMinigame().getScoreType().equals("egghunt"))
-			return;
-		
-		updateLoadout(event.getMinigame());
-
-		DisplayManager manager = DisplayManager.getDisplayManager(event.getPlayer());
-		manager.displayBossBar(ChatColor.translateAlternateColorCodes('&', "&2\u2756 &f&lEaster Egg Hunt &2\u2756"), 0);
+		return true;
 	}
 	
-	@EventHandler(priority=EventPriority.MONITOR)
-	private void onMinigameLeave(QuitMinigameEvent event)
+	@Override
+	public MinigameModule displaySettings( Minigame minigame )
 	{
-		if(!event.getMinigame().getScoreType().equals("egghunt"))
-			return;
-		
-		DisplayManager manager = DisplayManager.getDisplayManager(event.getPlayer());
-		manager.displayBossBarTemp(ChatColor.translateAlternateColorCodes('&', "&2\u2756 &f&lBad Luck &2\u2756"), 1, 30);
-		manager.clearEffects();
+		return null;
 	}
-	
-	@EventHandler(priority=EventPriority.MONITOR)
-	private void onMinigameLeave(EndMinigameEvent event)
+	@Override
+	public void endMinigame( Minigame minigame, List<MinigamePlayer> winners, List<MinigamePlayer> losers )
 	{
-		if(!event.getMinigame().getScoreType().equals("egghunt"))
-			return;
-		
-		for(MinigamePlayer player : event.getWinners())
+		for(MinigamePlayer player : winners)
 		{
 			DisplayManager manager = DisplayManager.getDisplayManager(player.getPlayer());
-			manager.displayBossBarTemp(ChatColor.translateAlternateColorCodes('&', "&2\u2756 &f&lCongratulations &2\u2756"), 1, 30);
 			manager.clearEffects();
+			DisplayManager.unload(player.getPlayer());
+			
+			final MonoPlayer mplayer = MonoPlayer.getPlayer(player.getPlayer());
+			mplayer.getBossBarDisplay().setPercent(1);
+			mplayer.getBossBarDisplay().setText(ChatColor.translateAlternateColorCodes('&', "&2\u2756 &f&lCongratulations &2\u2756"));
+			
+			Bukkit.getScheduler().runTaskLater(mPlugin, new Runnable()
+			{
+				@Override
+				public void run()
+				{
+					mplayer.setBossBarDisplay(null);
+				}
+			}, 40);
 		}
+	}
+	
+	private void updateScoreboard(MinigamePlayer mplayer)
+	{
+		int found = mplayer.getFlags().size();
+		int total = mplayer.getMinigame().getFlags().size();
+		
+		Player player = mplayer.getPlayer();
+		Scoreboard scoreboard = Bukkit.getScoreboardManager().getNewScoreboard();
+		player.getPlayer().setScoreboard(scoreboard);
+		scoreboard.clearSlot(DisplaySlot.SIDEBAR);
+		
+		Objective objective = scoreboard.registerNewObjective("main", "dummy");
+		objective.setDisplaySlot(DisplaySlot.SIDEBAR);
+		objective.setDisplayName(ChatColor.translateAlternateColorCodes('&', "&f&lEaster Egg Hunt"));
+		
+		objective.getScore(ChatColor.translateAlternateColorCodes('&', "You have found:")).setScore(2);
+		objective.getScore(ChatColor.translateAlternateColorCodes('&', String.format("%d/%d", found, total))).setScore(1);
+	}
+	
+	@Override
+	public void joinMinigame( Minigame minigame, MinigamePlayer player )
+	{
+		updateScoreboard(player);
+		
+		MonoPlayer mplayer = MonoPlayer.getPlayer(player.getPlayer());
+		mplayer.setBossBarDisplay(new BossDisplay(ChatColor.translateAlternateColorCodes('&', "&2\u2756 &f&lEaster Egg Hunt &2\u2756"), 0));
+		
+		updateLoadout(minigame);
+	}
+	
+	@Override
+	public void quitMinigame( Minigame minigame, MinigamePlayer player, boolean forced )
+	{
+		player.getPlayer().setScoreboard(Bukkit.getScoreboardManager().getMainScoreboard());
+		DisplayManager manager = DisplayManager.getDisplayManager(player.getPlayer());
+		manager.clearEffects();
+		DisplayManager.unload(player.getPlayer());
+		
+		final MonoPlayer mplayer = MonoPlayer.getPlayer(player.getPlayer());
+		mplayer.getBossBarDisplay().setPercent(1);
+		mplayer.getBossBarDisplay().setText(ChatColor.translateAlternateColorCodes('&', "&2\u2756 &f&lBad Luck &2\u2756"));
+		
+		Bukkit.getScheduler().runTaskLater(mPlugin, new Runnable()
+		{
+			@Override
+			public void run()
+			{
+				mplayer.setBossBarDisplay(null);
+			}
+		}, 40);
+	}
+	
+	@Override
+	public void startMinigame( Minigame minigame, MinigamePlayer player )
+	{
+	}
+	
+	@Override
+	public void stopMinigame( Minigame minigame, MinigamePlayer player )
+	{
+	}
+	
+	@Override
+	public EnumSet<MinigameType> validTypes()
+	{
+		return EnumSet.of(MinigameType.SINGLEPLAYER);
 	}
 	
 	@EventHandler(priority=EventPriority.MONITOR)
 	private void onFlagGrab(FlagGrabEvent event)
 	{
-		if(!event.getMinigame().getScoreType().equals("egghunt"))
+		if(event.getMinigame().getMechanic() != this)
 			return;
 		
 		DisplayManager manager = DisplayManager.getDisplayManager(event.getPlayer().getPlayer());
+		MonoPlayer mplayer = MonoPlayer.getPlayer(event.getPlayer().getPlayer());
 		
 		int found = event.getPlayer().getFlags().size();
 		int total = event.getMinigame().getFlags().size();
@@ -97,15 +175,19 @@ public class EasterEggLogic extends ScoreTypeBase implements Listener
 		if(found < total)
 		{
 			event.getPlayer().getPlayer().sendMessage(ChatColor.DARK_GREEN + "[\u2756] " + ChatColor.AQUA + "You found " + ChatColor.GOLD + ChatColor.BOLD + event.getFlag() + ChatColor.AQUA + "! " + ChatColor.GOLD + ChatColor.BOLD.toString() + (total - found) + ChatColor.AQUA + " more to go!");
-			manager.displayBossBar(ChatColor.translateAlternateColorCodes('&', "&2\u2756 &f&lEaster Egg Hunt " + found + "/" + total + " &2\u2756"), progress);
+			mplayer.getBossBarDisplay().setPercent(progress);
+			mplayer.getBossBarDisplay().setText(ChatColor.translateAlternateColorCodes('&', "&2\u2756 &f&lEaster Egg Hunt " + found + "/" + total + " &2\u2756"));
 		}
 		else
 		{
 			event.getPlayer().getPlayer().sendMessage(ChatColor.DARK_GREEN + "[\u2756] " + ChatColor.AQUA + "You found " + ChatColor.GOLD + ChatColor.BOLD + event.getFlag() + ChatColor.AQUA + "! Thats it! " + ChatColor.YELLOW + "Click the finish sign to win!");
-			manager.displayBossBar(ChatColor.translateAlternateColorCodes('&', "&2\u2714 &f&lHead back to the finish sign &2\u2714"), 1);
+			mplayer.getBossBarDisplay().setPercent(1);
+			mplayer.getBossBarDisplay().setText(ChatColor.translateAlternateColorCodes('&', "&2\u2714 &f&lHead back to the finish sign &2\u2714"));
 		}
 		
-		manager.addEffect("portal", event.getLocation(), 0.2f, 4, 0, 1);
+		updateScoreboard(event.getPlayer());
+		
+		manager.addEffect(ParticleEffect.PORTAL, event.getLocation(), 0.2f, 4, 0, 1);
 		
 		updateBook(event.getPlayer());
 	}
@@ -119,7 +201,7 @@ public class EasterEggLogic extends ScoreTypeBase implements Listener
 		
 		Minigame game = player.getMinigame();
 		
-		if(!game.getScoreType().equals("egghunt"))
+		if(game.getMechanic() != this)
 			return;
 		
 		updateBook(player);
@@ -217,7 +299,7 @@ public class EasterEggLogic extends ScoreTypeBase implements Listener
 		oldFlags = new ArrayList<String>(minigame.getFlags());
 		mOldFlags.put(minigame.getName(false), oldFlags);
 		
-		PlayerLoadout loadout = minigame.getDefaultPlayerLoadout();
+		PlayerLoadout loadout = LoadoutModule.getMinigameModule(minigame).getLoadout("default");
 		loadout.clearLoadout();
 		
 		ItemStack item = new ItemStack(Material.WRITTEN_BOOK);
