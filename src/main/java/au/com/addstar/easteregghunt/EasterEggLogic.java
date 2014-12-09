@@ -102,7 +102,7 @@ public class EasterEggLogic extends GameMechanicBase implements Listener
 		
 		Objective objective = scoreboard.registerNewObjective("main", "dummy");
 		objective.setDisplaySlot(DisplaySlot.SIDEBAR);
-		objective.setDisplayName(ChatColor.translateAlternateColorCodes('&', "&f&lEaster Egg Hunt"));
+		objective.setDisplayName(ChatColor.translateAlternateColorCodes('&', "&a&lChristmas Hunt"));
 		
 		objective.getScore(ChatColor.translateAlternateColorCodes('&', "You have found:")).setScore(2);
 		objective.getScore(ChatColor.translateAlternateColorCodes('&', String.format("%d/%d", found, total))).setScore(1);
@@ -114,7 +114,7 @@ public class EasterEggLogic extends GameMechanicBase implements Listener
 		updateScoreboard(player);
 		
 		MonoPlayer mplayer = MonoPlayer.getPlayer(player.getPlayer());
-		mplayer.setBossBarDisplay(new BossDisplay(ChatColor.translateAlternateColorCodes('&', "&2\u2756 &f&lEaster Egg Hunt &2\u2756"), 0));
+		mplayer.setBossBarDisplay(new BossDisplay(ChatColor.translateAlternateColorCodes('&', "&2\u2756 &a&lChristmas Hunt &2\u2756"), 0));
 		
 		updateLoadout(minigame);
 	}
@@ -128,8 +128,11 @@ public class EasterEggLogic extends GameMechanicBase implements Listener
 		DisplayManager.unload(player.getPlayer());
 		
 		final MonoPlayer mplayer = MonoPlayer.getPlayer(player.getPlayer());
-		mplayer.getBossBarDisplay().setPercent(1);
-		mplayer.getBossBarDisplay().setText(ChatColor.translateAlternateColorCodes('&', "&2\u2756 &f&lBad Luck &2\u2756"));
+		if (!forced)
+		{
+			mplayer.getBossBarDisplay().setPercent(1);
+			mplayer.getBossBarDisplay().setText(ChatColor.translateAlternateColorCodes('&', "&2\u2756 &f&lBad Luck &2\u2756"));
+		}
 		
 		Bukkit.getScheduler().runTaskLater(mPlugin, new Runnable()
 		{
@@ -176,7 +179,7 @@ public class EasterEggLogic extends GameMechanicBase implements Listener
 		{
 			event.getPlayer().getPlayer().sendMessage(ChatColor.DARK_GREEN + "[\u2756] " + ChatColor.AQUA + "You found " + ChatColor.GOLD + ChatColor.BOLD + event.getFlag() + ChatColor.AQUA + "! " + ChatColor.GOLD + ChatColor.BOLD.toString() + (total - found) + ChatColor.AQUA + " more to go!");
 			mplayer.getBossBarDisplay().setPercent(progress);
-			mplayer.getBossBarDisplay().setText(ChatColor.translateAlternateColorCodes('&', "&2\u2756 &f&lEaster Egg Hunt " + found + "/" + total + " &2\u2756"));
+			mplayer.getBossBarDisplay().setText(ChatColor.translateAlternateColorCodes('&', "&2\u2756 &a&lChristmas Hunt " + found + "/" + total + " &2\u2756"));
 		}
 		else
 		{
@@ -187,7 +190,7 @@ public class EasterEggLogic extends GameMechanicBase implements Listener
 		
 		updateScoreboard(event.getPlayer());
 		
-		manager.addEffect(ParticleEffect.PORTAL, event.getLocation(), 0.2f, 4, 0, 1);
+		manager.addEffect(ParticleEffect.MAGIC_WITCH, event.getLocation().add(0, 0.3, 0), 0, 4, 0.3f, 1);
 		
 		updateBook(event.getPlayer());
 	}
@@ -220,7 +223,7 @@ public class EasterEggLogic extends GameMechanicBase implements Listener
 			
 			meta = (BookMeta) i.getItemMeta();
 			
-			if(!meta.hasTitle() || !meta.getTitle().equals(ChatColor.translateAlternateColorCodes('&', "&2\u2756 &f&lEggs to find &2\u2756")))
+			if(!meta.hasTitle() || !meta.getTitle().equals(ChatColor.translateAlternateColorCodes('&', "&2\u2756 &f&lPresents to find &2\u2756")))
 				continue;
 			
 			item = i;
@@ -233,7 +236,7 @@ public class EasterEggLogic extends GameMechanicBase implements Listener
 		meta.setPages(new ArrayList<String>());
 		
 		StringBuilder builder = new StringBuilder();
-		builder.append(ChatColor.translateAlternateColorCodes('&', "&2\u2756 &0Easter Egg Hunt &2\u2756\n"));
+		builder.append(ChatColor.translateAlternateColorCodes('&', "&2\u2756 &0Christmas Hunt &2\u2756\n"));
 		builder.append(ChatColor.DARK_GRAY);
 		
 		builder.append("\u2594\u2594\u2594\u2594\u2594\u2594\u2594\u2594\u2594\u2594\u2594\u2594\n");
@@ -305,11 +308,11 @@ public class EasterEggLogic extends GameMechanicBase implements Listener
 		ItemStack item = new ItemStack(Material.WRITTEN_BOOK);
 		BookMeta meta = (BookMeta) item.getItemMeta();
 		
-		meta.setTitle(ChatColor.translateAlternateColorCodes('&', "&2\u2756 &f&lEggs to find &2\u2756"));
-		meta.setAuthor("Easter Egg Hunt");
+		meta.setTitle(ChatColor.translateAlternateColorCodes('&', "&2\u2756 &f&lPresents to find &2\u2756"));
+		meta.setAuthor("Christmas Hunt");
 		
 		StringBuilder builder = new StringBuilder();
-		builder.append(ChatColor.translateAlternateColorCodes('&', "&2\u2756 &0Easter Egg Hunt &2\u2756\n"));
+		builder.append(ChatColor.translateAlternateColorCodes('&', "&2\u2756 &0Christmas Hunt &2\u2756\n"));
 		builder.append(ChatColor.DARK_GRAY);
 		
 		builder.append("\u2594\u2594\u2594\u2594\u2594\u2594\u2594\u2594\u2594\u2594\u2594\u2594\n");
@@ -339,5 +342,7 @@ public class EasterEggLogic extends GameMechanicBase implements Listener
 		item.setItemMeta(meta);
 		
 		loadout.addItem(item, 0);
+		
+		minigame.saveMinigame();
 	}
 }

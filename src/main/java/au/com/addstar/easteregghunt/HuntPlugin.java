@@ -10,10 +10,10 @@ import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
+import org.bukkit.TreeSpecies;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -26,7 +26,7 @@ import org.bukkit.event.player.PlayerPickupItemEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.material.SpawnEgg;
+import org.bukkit.material.MaterialData;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.Vector;
 
@@ -38,8 +38,8 @@ import au.com.mineauz.minigames.minigame.Minigame;
 
 public class HuntPlugin extends JavaPlugin implements Listener
 {
-	private static final EntityType[] mEggTypes = new EntityType[] {EntityType.CREEPER, EntityType.ZOMBIE, EntityType.BLAZE, EntityType.CAVE_SPIDER, EntityType.CHICKEN, EntityType.COW, EntityType.ENDERMAN, EntityType.GHAST, EntityType.HORSE, EntityType.MAGMA_CUBE, EntityType.MUSHROOM_COW, EntityType.OCELOT, EntityType.PIG, EntityType.PIG_ZOMBIE, EntityType.SHEEP, EntityType.SKELETON, EntityType.SLIME, EntityType.SPIDER, EntityType.SQUID, EntityType.VILLAGER, EntityType.WITCH, EntityType.WOLF};
-	public static final String eggName = ChatColor.translateAlternateColorCodes('&', "&rEasterEgg&r");
+	private static final Material[] types = new Material[] {Material.CHEST, Material.ENDER_CHEST, Material.SAPLING, Material.MILK_BUCKET, Material.CARROT_ITEM, Material.COOKIE};
+	public static final String eggName = ChatColor.translateAlternateColorCodes('&', "&rPresent&r");
 	private static Random mRand = new Random();
 	
 	private WeakHashMap<Player, String> mWaitingEggs = new WeakHashMap<Player, String>();
@@ -68,7 +68,7 @@ public class HuntPlugin extends JavaPlugin implements Listener
 			}
 			
 			mWaitingEggs.put((Player)sender, args[0]);
-			sender.sendMessage(ChatColor.GOLD + "Right click the ground to finish placing the egg. Left click to cancel");
+			sender.sendMessage(ChatColor.GOLD + "Right click the ground to finish placing the present. Left click to cancel");
 			
 			return true;
 		}
@@ -95,12 +95,12 @@ public class HuntPlugin extends JavaPlugin implements Listener
 			
 			if(active)
 			{
-				sender.sendMessage(ChatColor.GOLD + "Easter Egg remove mode on");
-				sender.sendMessage(ChatColor.GOLD + "Click the block the egg is in the remove it");
+				sender.sendMessage(ChatColor.GOLD + "Present remove mode on");
+				sender.sendMessage(ChatColor.GOLD + "Click the block the present is in the remove it");
 			}
 			else
 			{
-				sender.sendMessage(ChatColor.GREEN + "Easter Egg remove mode off");
+				sender.sendMessage(ChatColor.GREEN + "Present remove mode off");
 			}
 			
 			return true;
@@ -144,8 +144,8 @@ public class HuntPlugin extends JavaPlugin implements Listener
 						item.remove();
 				}
 				
-				sender.sendMessage(ChatColor.GREEN + "Removed all easter eggs from this world");
-				sender.sendMessage(ChatColor.GRAY + "WARNING: Will not have removed eggs in unloaded chunks");
+				sender.sendMessage(ChatColor.GREEN + "Removed all presents from this world");
+				sender.sendMessage(ChatColor.GRAY + "WARNING: Will not have removed presents in unloaded chunks");
 			}
 			else
 			{
@@ -158,8 +158,8 @@ public class HuntPlugin extends JavaPlugin implements Listener
 					}
 				}
 				
-				sender.sendMessage(ChatColor.GREEN + "Removed all easter eggs within a " + radius + " block radius from you.");
-				sender.sendMessage(ChatColor.GRAY + "WARNING: Will not have removed eggs in unloaded chunks");
+				sender.sendMessage(ChatColor.GREEN + "Removed all presents within a " + radius + " block radius from you.");
+				sender.sendMessage(ChatColor.GRAY + "WARNING: Will not have removed presents in unloaded chunks");
 			}
 			
 			return true;
@@ -168,18 +168,20 @@ public class HuntPlugin extends JavaPlugin implements Listener
 		return false;
 	}
 	
-	public static SpawnEgg randomType()
+	@SuppressWarnings( "deprecation" )
+	public static MaterialData randomType()
 	{
-		SpawnEgg egg = new SpawnEgg();
-		egg.setSpawnedType(mEggTypes[mRand.nextInt(mEggTypes.length)]);
-		return egg;
+		Material base = types[mRand.nextInt(types.length)];
+		if (base == Material.SAPLING)
+			return base.getNewData(TreeSpecies.REDWOOD.getData());
+		else
+			return base.getNewData((byte)0);
 	}
 	
-	@SuppressWarnings( "deprecation" )
 	public static ItemStack newEasterEgg(String name)
 	{
-		ItemStack item = new ItemStack(Material.MONSTER_EGG);
-		item.setDurability(randomType().getData());
+		MaterialData data = randomType();
+		ItemStack item = data.toItemStack(1);
 		
 		ItemMeta meta = item.getItemMeta();
 		meta.setDisplayName(eggName);
@@ -226,7 +228,7 @@ public class HuntPlugin extends JavaPlugin implements Listener
 			}
 			
 			if(removed)
-				event.getPlayer().sendMessage(ChatColor.GOLD + "Easter Egg removed");
+				event.getPlayer().sendMessage(ChatColor.GOLD + "Present removed");
 			
 			event.setCancelled(true);
 		}
@@ -244,10 +246,10 @@ public class HuntPlugin extends JavaPlugin implements Listener
 					item.setPickupDelay(0);
 					item.setVelocity(new Vector());
 					
-					event.getPlayer().sendMessage(ChatColor.GREEN + "Easter egg '" + eggName + "' has been placed.");
+					event.getPlayer().sendMessage(ChatColor.GREEN + "Present '" + eggName + "' has been placed.");
 				}
 				else if(event.getAction() == Action.LEFT_CLICK_BLOCK)
-					event.getPlayer().sendMessage(ChatColor.GOLD + "Easter egg placement cancelled.");
+					event.getPlayer().sendMessage(ChatColor.GOLD + "Present placement cancelled.");
 				
 				event.setCancelled(true);
 			}
@@ -267,7 +269,7 @@ public class HuntPlugin extends JavaPlugin implements Listener
 		ItemMeta meta = item.getItemMeta();
 		if(!meta.hasLore())
 		{
-			getLogger().warning("Easter egg did not have egg name?!");
+			getLogger().warning("Present did not have egg name?!");
 			return;
 		}
 		
@@ -297,7 +299,10 @@ public class HuntPlugin extends JavaPlugin implements Listener
 	private void onItemDespawn(ItemDespawnEvent event)
 	{
 		if(isEasterEgg(event.getEntity()))
+		{
+			event.getEntity().setPickupDelay(0);
 			event.setCancelled(true);
+		}
 	}
 	
 	@EventHandler
