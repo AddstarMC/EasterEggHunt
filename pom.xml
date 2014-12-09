@@ -28,7 +28,7 @@
     </dependency>   
     <dependency>
     	<groupId>au.com.mineauz</groupId>
-    	<artifactId>minigames</artifactId>
+    	<artifactId>Minigames</artifactId>
     	<version>1.7.0-SNAPSHOT</version>
     	<exclusions>
     	  <exclusion>
