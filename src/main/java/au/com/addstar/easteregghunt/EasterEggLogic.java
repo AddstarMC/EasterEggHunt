@@ -76,8 +76,11 @@ public class EasterEggLogic extends GameMechanicBase implements Listener
 			DisplayManager.unload(player.getPlayer());
 			
 			final MonoPlayer mplayer = MonoPlayer.getPlayer(player.getPlayer());
-			mplayer.getBossBarDisplay().setPercent(1);
-			mplayer.getBossBarDisplay().setText(ChatColor.translateAlternateColorCodes('&', "&2\u2756 &f&lCongratulations &2\u2756"));
+			if (mplayer.getBossBarDisplay() != null)
+			{
+				mplayer.getBossBarDisplay().setPercent(1);
+				mplayer.getBossBarDisplay().setText(ChatColor.translateAlternateColorCodes('&', "&2\u2756 &f&lCongratulations &2\u2756"));
+			}
 			
 			Bukkit.getScheduler().runTaskLater(mPlugin, new Runnable()
 			{
@@ -128,7 +131,7 @@ public class EasterEggLogic extends GameMechanicBase implements Listener
 		DisplayManager.unload(player.getPlayer());
 		
 		final MonoPlayer mplayer = MonoPlayer.getPlayer(player.getPlayer());
-		if (!forced)
+		if (!forced && mplayer.getBossBarDisplay() != null)
 		{
 			mplayer.getBossBarDisplay().setPercent(1);
 			mplayer.getBossBarDisplay().setText(ChatColor.translateAlternateColorCodes('&', "&2\u2756 &f&lBad Luck &2\u2756"));
@@ -178,14 +181,20 @@ public class EasterEggLogic extends GameMechanicBase implements Listener
 		if(found < total)
 		{
 			event.getPlayer().getPlayer().sendMessage(ChatColor.DARK_GREEN + "[\u2756] " + ChatColor.AQUA + "You found " + ChatColor.GOLD + ChatColor.BOLD + event.getFlag() + ChatColor.AQUA + "! " + ChatColor.GOLD + ChatColor.BOLD.toString() + (total - found) + ChatColor.AQUA + " more to go!");
-			mplayer.getBossBarDisplay().setPercent(progress);
-			mplayer.getBossBarDisplay().setText(ChatColor.translateAlternateColorCodes('&', "&2\u2756 &a&lChristmas Hunt " + found + "/" + total + " &2\u2756"));
+			if (mplayer.getBossBarDisplay() != null)
+			{
+				mplayer.getBossBarDisplay().setPercent(progress);
+				mplayer.getBossBarDisplay().setText(ChatColor.translateAlternateColorCodes('&', "&2\u2756 &a&lChristmas Hunt " + found + "/" + total + " &2\u2756"));
+			}
 		}
 		else
 		{
 			event.getPlayer().getPlayer().sendMessage(ChatColor.DARK_GREEN + "[\u2756] " + ChatColor.AQUA + "You found " + ChatColor.GOLD + ChatColor.BOLD + event.getFlag() + ChatColor.AQUA + "! Thats it! " + ChatColor.YELLOW + "Click the finish sign to win!");
-			mplayer.getBossBarDisplay().setPercent(1);
-			mplayer.getBossBarDisplay().setText(ChatColor.translateAlternateColorCodes('&', "&2\u2714 &f&lHead back to the finish sign &2\u2714"));
+			if (mplayer.getBossBarDisplay() != null)
+			{
+				mplayer.getBossBarDisplay().setPercent(1);
+				mplayer.getBossBarDisplay().setText(ChatColor.translateAlternateColorCodes('&', "&2\u2714 &f&lHead back to the finish sign &2\u2714"));
+			}
 		}
 		
 		updateScoreboard(event.getPlayer());
