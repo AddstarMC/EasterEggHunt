@@ -288,7 +288,7 @@ public class HuntPlugin extends JavaPlugin implements Listener
 		
 		player.addFlag(name);
 		
-		event.getPlayer().playSound(event.getPlayer().getLocation(), Sound.ITEM_PICKUP, 1, 1);
+		event.getPlayer().playSound(event.getPlayer().getLocation(), Sound.ENTITY_ITEM_PICKUP, 1, 1);
 		
 		Bukkit.getPluginManager().callEvent(new FlagGrabEvent(player, name, game, event.getItem().getLocation()));
 	}
@@ -296,8 +296,10 @@ public class HuntPlugin extends JavaPlugin implements Listener
 	@EventHandler(priority=EventPriority.LOWEST, ignoreCancelled=true)
 	private void onItemDespawn(ItemDespawnEvent event)
 	{
-		if(isEasterEgg(event.getEntity()))
+		if(isEasterEgg(event.getEntity())) {
+			event.getEntity().setPickupDelay(0);
 			event.setCancelled(true);
+		}
 	}
 	
 	@EventHandler
