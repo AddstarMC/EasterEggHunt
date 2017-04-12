@@ -96,7 +96,7 @@ public class DisplayManager
 	
 	private void spawnParticles(Location location, Particle particle, float offX, float offY, float offZ, float speed, int count)
 	{
-		mPlayer.getWorld().spawnParticle(particle, location, count, offX, offY, offZ);
+		mPlayer.spawnParticle(particle, location, count, offX, offY, offZ);
 	}
 	
 	public static DisplayManager getDisplayManager(Player player)
