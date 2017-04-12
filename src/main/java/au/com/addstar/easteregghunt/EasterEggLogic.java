@@ -8,6 +8,7 @@ import java.util.List;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.Particle;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -22,7 +23,6 @@ import org.bukkit.scoreboard.Scoreboard;
 
 import au.com.addstar.monolith.BossDisplay;
 import au.com.addstar.monolith.MonoPlayer;
-import au.com.addstar.monolith.ParticleEffect;
 import au.com.mineauz.minigames.MinigamePlayer;
 import au.com.mineauz.minigames.Minigames;
 import au.com.mineauz.minigames.PlayerLoadout;
@@ -194,8 +194,8 @@ public class EasterEggLogic extends GameMechanicBase implements Listener
 		}
 		
 		updateScoreboard(event.getPlayer());
-		
-		manager.addEffect(ParticleEffect.PORTAL, event.getLocation(), 0.2f, 4, 0, 1);
+
+		manager.addEffect(Particle.PORTAL, event.getLocation(), 0.2f, 4, 0, 1);
 		
 		updateBook(event.getPlayer());
 	}

@@ -6,13 +6,10 @@ import java.util.WeakHashMap;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.Particle;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitTask;
-import org.bukkit.util.Vector;
-
-import au.com.addstar.monolith.MonoPlayer;
-import au.com.addstar.monolith.ParticleEffect;
 
 public class DisplayManager
 {
@@ -35,8 +32,8 @@ public class DisplayManager
 		mEffects = new HashMap<Integer, DisplayManager.Effect>();
 		mNextEffectId = 0;
 	}
-	
-	public int addEffect(ParticleEffect type, Location location, float speed, int count, float spread, int emitCount)
+
+	public int addEffect(Particle type, Location location, float speed, int count, float spread, int emitCount)
 	{
 		Effect effect = new Effect();
 		effect.id = mNextEffectId++;
@@ -97,10 +94,9 @@ public class DisplayManager
 		}
 	}
 	
-	private void spawnParticles(Location location, ParticleEffect effect, float offX, float offY, float offZ, float speed, int count)
+	private void spawnParticles(Location location, Particle particle, float offX, float offY, float offZ, float speed, int count)
 	{
-		MonoPlayer player = MonoPlayer.getPlayer(mPlayer);
-		player.playParticleEffect(location, effect, speed, count, new Vector(offX, offY, offZ));
+		mPlayer.getWorld().spawnParticle(particle, location, count, offX, offY, offZ);
 	}
 	
 	public static DisplayManager getDisplayManager(Player player)
@@ -127,7 +123,7 @@ public class DisplayManager
 	
 	private static class Effect
 	{
-		public ParticleEffect type;
+		public Particle type;
 		public Location location;
 		public int id;
 		public int count;
