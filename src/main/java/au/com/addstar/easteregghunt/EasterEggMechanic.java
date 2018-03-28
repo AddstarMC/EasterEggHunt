@@ -36,17 +36,17 @@ public class EasterEggMechanic extends GameMechanicBase implements Listener
 
 	@Override
 	public String getMechanic() {
-		return null;
+		return "EGG_HUNT";
 	}
 
 	@Override
 	public EnumSet<MinigameType> validTypes() {
-		return null;
+		return EnumSet.of(MinigameType.GLOBAL);
 	}
 
 	@Override
 	public boolean checkCanStart(Minigame minigame, MinigamePlayer minigamePlayer) {
-		return false;
+		return true;
 	}
 
 	@Override
@@ -72,7 +72,10 @@ public class EasterEggMechanic extends GameMechanicBase implements Listener
 	
 	@Override
 	public void joinMinigame(Minigame minigame, MinigamePlayer minigamePlayer) {
-	
+		updateLoadout(minigame);
+
+		DisplayManager manager = DisplayManager.getDisplayManager(minigamePlayer.getPlayer());
+		manager.displayBossBar(ChatColor.translateAlternateColorCodes('&', "&2\u2756 &f&lEaster Egg Hunt &2\u2756"), 0);
 	}
 	
 	public void onJoinMinigame(Minigame minigame, MinigamePlayer player) {
@@ -81,51 +84,20 @@ public class EasterEggMechanic extends GameMechanicBase implements Listener
 	
 	@Override
 	public void quitMinigame(Minigame minigame, MinigamePlayer minigamePlayer, boolean b) {
-
-	}
-
-	@Override
-	public void endMinigame(Minigame minigame, List<MinigamePlayer> list, List<MinigamePlayer> list1) {
-
-	}
-
-
-	@EventHandler(priority=EventPriority.MONITOR)
-	private void onMinigameJoin(final JoinMinigameEvent event)
-	{
-		if(!event.getMinigame().getMechanic().getMechanic().equals("egghunt"))
-			return;
-		
-		updateLoadout(event.getMinigame());
-
-		DisplayManager manager = DisplayManager.getDisplayManager(event.getPlayer());
-		manager.displayBossBar(ChatColor.translateAlternateColorCodes('&', "&2\u2756 &f&lEaster Egg Hunt &2\u2756"), 0);
-	}
-	
-	@EventHandler(priority=EventPriority.MONITOR)
-	private void onMinigameLeave(QuitMinigameEvent event)
-	{
-		if(!event.getMinigame().getMechanic().equals("egghunt"))
-			return;
-		
-		DisplayManager manager = DisplayManager.getDisplayManager(event.getPlayer());
+		DisplayManager manager = DisplayManager.getDisplayManager(minigamePlayer.getPlayer());
 		manager.displayBossBarTemp(ChatColor.translateAlternateColorCodes('&', "&2\u2756 &f&lBad Luck &2\u2756"), 1, 30);
 		manager.clearEffects();
 	}
-	
-	@EventHandler(priority=EventPriority.MONITOR)
-	private void onMinigameLeave(EndMinigameEvent event)
-	{
-		if(!event.getMinigame().getMechanicName().equals("egghunt"))
-			return;
-		
-		for(MinigamePlayer player : event.getWinners())
-		{
-			DisplayManager manager = DisplayManager.getDisplayManager(player.getPlayer());
-			manager.displayBossBarTemp(ChatColor.translateAlternateColorCodes('&', "&2\u2756 &f&lCongratulations &2\u2756"), 1, 30);
-			manager.clearEffects();
-		}
+
+	@Override
+	public void endMinigame(Minigame minigame, List<MinigamePlayer> winners, List<MinigamePlayer> losers) {
+        for(MinigamePlayer player : winners) {
+            DisplayManager manager = DisplayManager.getDisplayManager(player.getPlayer());
+            manager.displayBossBarTemp(ChatColor.translateAlternateColorCodes('&', "&2\u2756 &f&lCongratulations &2\u2756"), 1, 30);
+            manager.clearEffects();
+        }
 	}
+
 	
 	@EventHandler(priority=EventPriority.MONITOR)
 	private void onFlagGrab(FlagGrabEvent event)
@@ -172,7 +144,6 @@ public class EasterEggMechanic extends GameMechanicBase implements Listener
 		updateBook(player);
 	}
 	
-	@SuppressWarnings( "deprecation" )
 	private void updateBook(MinigamePlayer player)
 	{
 		ItemStack item = null;
