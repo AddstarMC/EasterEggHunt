@@ -21,7 +21,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
-import org.bukkit.plugin.Plugin;
 
 
 public class EasterEggMechanic extends GameMechanicBase implements Listener
@@ -72,9 +71,12 @@ public class EasterEggMechanic extends GameMechanicBase implements Listener
 	}
 	
 	@Override
+	public void joinMinigame(Minigame minigame, MinigamePlayer minigamePlayer) {
+	
+	}
+	
 	public void onJoinMinigame(Minigame minigame, MinigamePlayer player) {
-	
-	
+		joinMinigame(minigame,player);
 	}
 	
 	@Override
