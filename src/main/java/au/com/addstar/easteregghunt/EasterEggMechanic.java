@@ -1,9 +1,18 @@
 package au.com.addstar.easteregghunt;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
+import au.com.mineauz.minigames.MinigamePlayer;
+import au.com.mineauz.minigames.Minigames;
+import au.com.mineauz.minigames.PlayerLoadout;
+import au.com.mineauz.minigames.events.EndMinigameEvent;
+import au.com.mineauz.minigames.events.JoinMinigameEvent;
+import au.com.mineauz.minigames.events.QuitMinigameEvent;
+import au.com.mineauz.minigames.gametypes.MinigameType;
+import au.com.mineauz.minigames.mechanics.GameMechanicBase;
+import au.com.mineauz.minigames.minigame.Minigame;
+import au.com.mineauz.minigames.minigame.modules.LoadoutModule;
+import au.com.mineauz.minigames.minigame.modules.MinigameModule;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.event.EventHandler;
@@ -14,39 +23,75 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.plugin.Plugin;
 
-import com.pauldavdesign.mineauz.minigames.MinigamePlayer;
-import com.pauldavdesign.mineauz.minigames.Minigames;
-import com.pauldavdesign.mineauz.minigames.PlayerLoadout;
-import com.pauldavdesign.mineauz.minigames.events.EndMinigameEvent;
-import com.pauldavdesign.mineauz.minigames.events.JoinMinigameEvent;
-import com.pauldavdesign.mineauz.minigames.events.QuitMinigameEvent;
-import com.pauldavdesign.mineauz.minigames.minigame.Minigame;
-import com.pauldavdesign.mineauz.minigames.scoring.ScoreTypeBase;
 
-public class EasterEggLogic extends ScoreTypeBase implements Listener
+public class EasterEggMechanic extends GameMechanicBase implements Listener
 {
 	private HashMap<String, List<String>> mOldFlags;
+	private static HuntPlugin plugin;
 	
-	public EasterEggLogic(Plugin plugin)
+	EasterEggMechanic(HuntPlugin plugin)
 	{
+		EasterEggMechanic.plugin = plugin;
 		mOldFlags = new HashMap<String, List<String>>();
-	}
-	
-	@Override
-	public void balanceTeam( List<MinigamePlayer> players, Minigame mgm )
-	{
 	}
 
 	@Override
-	public String getType()
-	{
-		return "egghunt";
+	public String getMechanic() {
+		return null;
 	}
+
+	@Override
+	public EnumSet<MinigameType> validTypes() {
+		return null;
+	}
+
+	@Override
+	public boolean checkCanStart(Minigame minigame, MinigamePlayer minigamePlayer) {
+		return false;
+	}
+
+	@Override
+	public List<MinigamePlayer> balanceTeam(List<MinigamePlayer> players, Minigame mgm )
+	{
+		return Collections.emptyList();
+	}
+
+	@Override
+	public MinigameModule displaySettings(Minigame minigame) {
+		return null;
+	}
+
+	@Override
+	public void startMinigame(Minigame minigame, MinigamePlayer minigamePlayer) {
+
+	}
+
+	@Override
+	public void stopMinigame(Minigame minigame, MinigamePlayer minigamePlayer) {
+
+	}
+	
+	@Override
+	public void onJoinMinigame(Minigame minigame, MinigamePlayer player) {
+	
+	
+	}
+	
+	@Override
+	public void quitMinigame(Minigame minigame, MinigamePlayer minigamePlayer, boolean b) {
+
+	}
+
+	@Override
+	public void endMinigame(Minigame minigame, List<MinigamePlayer> list, List<MinigamePlayer> list1) {
+
+	}
+
 
 	@EventHandler(priority=EventPriority.MONITOR)
 	private void onMinigameJoin(final JoinMinigameEvent event)
 	{
-		if(!event.getMinigame().getScoreType().equals("egghunt"))
+		if(!event.getMinigame().getMechanic().getMechanic().equals("egghunt"))
 			return;
 		
 		updateLoadout(event.getMinigame());
@@ -58,7 +103,7 @@ public class EasterEggLogic extends ScoreTypeBase implements Listener
 	@EventHandler(priority=EventPriority.MONITOR)
 	private void onMinigameLeave(QuitMinigameEvent event)
 	{
-		if(!event.getMinigame().getScoreType().equals("egghunt"))
+		if(!event.getMinigame().getMechanic().equals("egghunt"))
 			return;
 		
 		DisplayManager manager = DisplayManager.getDisplayManager(event.getPlayer());
@@ -69,7 +114,7 @@ public class EasterEggLogic extends ScoreTypeBase implements Listener
 	@EventHandler(priority=EventPriority.MONITOR)
 	private void onMinigameLeave(EndMinigameEvent event)
 	{
-		if(!event.getMinigame().getScoreType().equals("egghunt"))
+		if(!event.getMinigame().getMechanicName().equals("egghunt"))
 			return;
 		
 		for(MinigamePlayer player : event.getWinners())
@@ -83,7 +128,7 @@ public class EasterEggLogic extends ScoreTypeBase implements Listener
 	@EventHandler(priority=EventPriority.MONITOR)
 	private void onFlagGrab(FlagGrabEvent event)
 	{
-		if(!event.getMinigame().getScoreType().equals("egghunt"))
+		if(!event.getMinigame().getMechanicName().equals("egghunt"))
 			return;
 		
 		DisplayManager manager = DisplayManager.getDisplayManager(event.getPlayer().getPlayer());
@@ -113,13 +158,13 @@ public class EasterEggLogic extends ScoreTypeBase implements Listener
 	@EventHandler(priority=EventPriority.MONITOR)
 	private void onRespawn(PlayerRespawnEvent event)
 	{
-		MinigamePlayer player = Minigames.plugin.pdata.getMinigamePlayer(event.getPlayer());
+		MinigamePlayer player = Minigames.plugin.getPlayerData().getMinigamePlayer(event.getPlayer());
 		if(player == null || !player.isInMinigame())
 			return;
 		
 		Minigame game = player.getMinigame();
 		
-		if(!game.getScoreType().equals("egghunt"))
+		if(!game.getMechanicName().equals("egghunt"))
 			return;
 		
 		updateBook(player);
@@ -217,7 +262,7 @@ public class EasterEggLogic extends ScoreTypeBase implements Listener
 		oldFlags = new ArrayList<String>(minigame.getFlags());
 		mOldFlags.put(minigame.getName(false), oldFlags);
 		
-		PlayerLoadout loadout = minigame.getDefaultPlayerLoadout();
+		PlayerLoadout loadout = LoadoutModule.getMinigameModule(minigame).getLoadout("default");
 		loadout.clearLoadout();
 		
 		ItemStack item = new ItemStack(Material.WRITTEN_BOOK);

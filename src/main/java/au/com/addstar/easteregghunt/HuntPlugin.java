@@ -5,6 +5,11 @@ import java.util.List;
 import java.util.Random;
 import java.util.WeakHashMap;
 
+import au.com.mineauz.minigames.MinigamePlayer;
+import au.com.mineauz.minigames.Minigames;
+import au.com.mineauz.minigames.gametypes.MinigameType;
+import au.com.mineauz.minigames.mechanics.GameMechanics;
+import au.com.mineauz.minigames.minigame.Minigame;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -29,12 +34,6 @@ import org.bukkit.material.SpawnEgg;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.Vector;
 
-import com.pauldavdesign.mineauz.minigames.MinigamePlayer;
-import com.pauldavdesign.mineauz.minigames.Minigames;
-import com.pauldavdesign.mineauz.minigames.gametypes.MinigameType;
-import com.pauldavdesign.mineauz.minigames.minigame.Minigame;
-import com.pauldavdesign.mineauz.minigames.scoring.ScoreType;
-
 public class HuntPlugin extends JavaPlugin implements Listener
 {
 	private static final EntityType[] mEggTypes = new EntityType[] {EntityType.CREEPER, EntityType.ZOMBIE, EntityType.BLAZE, EntityType.CAVE_SPIDER, EntityType.CHICKEN, EntityType.COW, EntityType.ENDERMAN, EntityType.GHAST, EntityType.HORSE, EntityType.MAGMA_CUBE, EntityType.MUSHROOM_COW, EntityType.OCELOT, EntityType.PIG, EntityType.PIG_ZOMBIE, EntityType.SHEEP, EntityType.SKELETON, EntityType.SLIME, EntityType.SPIDER, EntityType.SQUID, EntityType.VILLAGER, EntityType.WITCH, EntityType.WOLF};
@@ -49,7 +48,7 @@ public class HuntPlugin extends JavaPlugin implements Listener
 	{
 		Bukkit.getPluginManager().registerEvents(this, this);
 		DisplayManager.initialize(this);
-		ScoreType.addScoreType(new EasterEggLogic(this));
+		GameMechanics.addGameMechanic(new EasterEggMechanic(this));
 	}
 	
 	@Override
@@ -272,7 +271,7 @@ public class HuntPlugin extends JavaPlugin implements Listener
 		
 		String name = meta.getLore().get(0);
 		
-		MinigamePlayer player = Minigames.plugin.pdata.getMinigamePlayer(event.getPlayer());
+		MinigamePlayer player = Minigames.plugin.getPlayerData().getMinigamePlayer(event.getPlayer());
 		if(player == null)
 			return;
 		
@@ -287,7 +286,7 @@ public class HuntPlugin extends JavaPlugin implements Listener
 		
 		player.addFlag(name);
 		
-		event.getPlayer().playSound(event.getPlayer().getLocation(), Sound.ITEM_PICKUP, 1, 1);
+		event.getPlayer().playSound(event.getPlayer().getLocation(), Sound.ENTITY_ITEM_PICKUP, 1, 1);
 		
 		Bukkit.getPluginManager().callEvent(new FlagGrabEvent(player, name, game, event.getItem().getLocation()));
 	}
