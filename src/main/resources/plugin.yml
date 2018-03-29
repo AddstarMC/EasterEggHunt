@@ -12,12 +12,12 @@ permissions:
     default: op
 
 commands:
+  eesetgame:
+    permission: easteregghunt.create
+    usage: /<command> <gamename>
   eecreate:
     permission: easteregghunt.create
-    usage: /<command> <name> 
-  eeremove:
-    permission: easteregghunt.create
-    usage: /<command>
+    usage: /<command> <name>
   eeremoveall:
     permission: easteregghunt.create
     usage: /<command> [radius]

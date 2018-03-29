@@ -1,13 +1,17 @@
 package au.com.addstar.easteregghunt;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.HashMap;
-import java.util.Random;
-import java.util.WeakHashMap;
+import java.util.*;
 
+import au.com.mineauz.minigames.MinigameUtils;
+import au.com.mineauz.minigames.Minigames;
+import com.comphenix.protocol.wrappers.EnumWrappers;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.boss.BarColor;
+import org.bukkit.boss.BarStyle;
+import org.bukkit.boss.BossBar;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -21,24 +25,21 @@ import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.ProtocolManager;
 import com.comphenix.protocol.events.PacketContainer;
-import com.comphenix.protocol.wrappers.WrappedDataWatcher;
 
 public class DisplayManager
 {
-	private static final int ENTITY_DRAGON_ID = 999999999;
 	private static final int EFFECT_DELAY = 5;
-	
-	private static WeakHashMap<Player, DisplayManager> mAllManagers = new WeakHashMap<Player, DisplayManager>();
+	private static WeakHashMap<Player, DisplayManager> mAllManagers = new WeakHashMap<>();
 	private static ProtocolManager mLib;
 	private static Random mRand = new Random();
 	private static Plugin mPlugin;
 	
 	private Player mPlayer;
-	private Location mLocation;
-	
+
 	private boolean mShowBossBar;
 	private String mCurrentBossText;
 	private float mCurrentBossValue;
+	private BossBar bar;
 	
 	private HashMap<Integer, Effect> mEffects;
 	private int mNextEffectId;
@@ -47,197 +48,61 @@ public class DisplayManager
 	private DisplayManager(Player player)
 	{
 		mPlayer = player;
-		mLocation = mPlayer.getLocation();
 		mShowBossBar = false;
-		
-		mEffects = new HashMap<Integer, DisplayManager.Effect>();
+		bar = Bukkit.createBossBar(null, BarColor.GREEN, BarStyle.SOLID);
+		bar.setVisible(false);
+		bar.addPlayer(mPlayer);
+		mEffects = new HashMap<>();
 		mNextEffectId = 0;
 	}
 	
-	public void updateDisplays()
+	private void updateDisplays()
 	{
-		Location loc = mPlayer.getLocation();
-		
-		if(mShowBossBar)
-		{
-			if(mLocation.getWorld() != loc.getWorld())
-			{
-				int value = (int)Math.min(Math.max(mCurrentBossValue * 200, 1), 200);
-				spawnFakeDragon(mCurrentBossText, value);
-			}
-			else
-			{
-				double dist = mLocation.distanceSquared(loc);
-				
-				if(dist >= 640000)
-				{
-					int value = (int)Math.min(Math.max(mCurrentBossValue * 200, 1), 200);
-					spawnFakeDragon(mCurrentBossText, value);
-					mLocation = loc;
-				}
-				else if(dist > 500)
-				{
-					positionDragon();
-					mLocation = loc;
-				}
-			}
+		bar.setProgress(mCurrentBossValue);
+		bar.setTitle(mCurrentBossText);
+		if(mShowBossBar){
+			bar.setProgress(mCurrentBossValue);
+			bar.setTitle(mCurrentBossText);
+			bar.setVisible(true);
 		}
 	}
 	
-	public void displayBossBar(String text, float percent)
+	void displayBossBar(String text, float percent)
 	{
 		mCurrentBossText = text;
 		mCurrentBossValue = percent;
-		int value = (int)Math.min(Math.max(percent * 200, 1), 200);
-		
-		if(!mShowBossBar)
-			spawnFakeDragon(text, value);
-		else
-			updateDragonStats(text, value);
-		
+		bar.setTitle(text);
+		bar.setProgress(percent);
+		bar.setVisible(true);
 		mShowBossBar = true;
 	}
 	
-	public void displayBossBarTemp(String text, float percent, int ticks)
+	void displayBossBarTemp(String text, float percent, int ticks)
 	{
 		displayBossBar(text, percent);
 		
-		Bukkit.getScheduler().runTaskLater(mPlugin, new Runnable()
-		{
-			@Override
-			public void run()
-			{
-				hideBossBar();
-			}
-		}, ticks);
+		Bukkit.getScheduler().runTaskLater(mPlugin, () -> hideBossBar(), ticks);
 	}
 	
 	public void updateBossBarProgress(float percent)
 	{
 		mCurrentBossValue = percent;
-		int value = (int)Math.min(Math.max(percent * 200, 1), 200);
-		
-		if(!mShowBossBar)
-			spawnFakeDragon(mCurrentBossText, value);
-		else
-			updateDragonStats(mCurrentBossText, value);
-		
+		bar.setProgress(percent);
+		bar.setTitle(mCurrentBossText);
 		mShowBossBar = true;
 	}
 	
-	public void hideBossBar()
+	void hideBossBar()
 	{
 		if(!mShowBossBar)
 			return;
 		
 		mShowBossBar = false;
-		removeDragon();
+		bar.setVisible(false);
 	}
-	
-	private void spawnFakeDragon(String name, int health)
-	{
-		Location loc = mPlayer.getLocation();
-		
-		PacketContainer spawnPacket = mLib.createPacket(PacketType.Play.Server.SPAWN_ENTITY_LIVING);
-		spawnPacket.getIntegers().write(0, ENTITY_DRAGON_ID); // EntityId
-		spawnPacket.getIntegers().write(1, 63); // EntityType
-		spawnPacket.getIntegers().write(2, loc.getBlockX() * 32); // X
-		spawnPacket.getIntegers().write(3, -500 * 32); // Y
-		spawnPacket.getIntegers().write(4, loc.getBlockZ() * 32); // Z
-		spawnPacket.getBytes().write(0, (byte)0); // Yaw
-		spawnPacket.getBytes().write(1, (byte)0); // Pitch
-		spawnPacket.getBytes().write(2, (byte)0); // ? head?
-		
-		spawnPacket.getIntegers().write(5, 0); // MotX
-		spawnPacket.getIntegers().write(6, 0); // MotY
-		spawnPacket.getIntegers().write(7, 0); // MotZ
-		
-		WrappedDataWatcher wrapper = new WrappedDataWatcher();
-		
-		if(name.length() > 64)
-			name = name.substring(0,64);
-		wrapper.setObject(0, (byte)0x20);
-		wrapper.setObject(6, Float.valueOf(health));
-		wrapper.setObject(10, name);
-		wrapper.setObject(11, Byte.valueOf((byte)1));
-		
-		spawnPacket.getDataWatcherModifier().write(0, wrapper); // DataWatcher
-		
-		try
-		{
-			mLib.sendServerPacket(mPlayer, spawnPacket, false);
-		}
-		catch ( InvocationTargetException e )
-		{
-			e.printStackTrace();
-		}
-	}
-	
-	private void updateDragonStats(String name, int health)
-	{
-		PacketContainer update = mLib.createPacket(PacketType.Play.Server.ENTITY_METADATA);
-		update.getIntegers().write(0, ENTITY_DRAGON_ID); // EntityId
-		
-		WrappedDataWatcher wrapper = new WrappedDataWatcher();
-		
-		if(name.length() > 64)
-			name = name.substring(0,64);
-		wrapper.setObject(0, (byte)0x20);
-		wrapper.setObject(6, Float.valueOf(health));
-		wrapper.setObject(10, name);
-		wrapper.setObject(11, Byte.valueOf((byte)1));
-		
-		update.getWatchableCollectionModifier().write(0, wrapper.getWatchableObjects()); // DataWatcher
-		
-		try
-		{
-			mLib.sendServerPacket(mPlayer, update, false);
-		}
-		catch ( InvocationTargetException e )
-		{
-			e.printStackTrace();
-		}
-	}
-	
-	private void positionDragon()
-	{
-		Location loc = mPlayer.getLocation();
-		
-		PacketContainer movePacket = mLib.createPacket(PacketType.Play.Server.ENTITY_TELEPORT);
-		movePacket.getIntegers().write(0, ENTITY_DRAGON_ID); // EntityId
-		movePacket.getIntegers().write(1, loc.getBlockX() * 32); // X
-		movePacket.getIntegers().write(2, -500 * 32); // Y
-		movePacket.getIntegers().write(3, loc.getBlockZ() * 32); // Z
-		movePacket.getBytes().write(0, (byte)0); // Yaw
-		movePacket.getBytes().write(1, (byte)0); // Pitch
-		
 
-		try
-		{
-			mLib.sendServerPacket(mPlayer, movePacket, false);
-		}
-		catch ( InvocationTargetException e )
-		{
-			e.printStackTrace();
-		}
-	}
 	
-	private void removeDragon()
-	{
-		PacketContainer deletePacket = mLib.createPacket(PacketType.Play.Server.ENTITY_DESTROY);
-		deletePacket.getIntegerArrays().write(0, new int[] {ENTITY_DRAGON_ID});
-		
-		try
-		{
-			mLib.sendServerPacket(mPlayer, deletePacket, false);
-		}
-		catch ( InvocationTargetException e )
-		{
-			e.printStackTrace();
-		}
-	}
-	
-	public int addEffect(String type, Location location, float speed, int count, float spread, int emitCount)
+	 void addEffect(String type, Location location, float speed, int count, float spread, int emitCount)
 	{
 		Effect effect = new Effect();
 		effect.id = mNextEffectId++;
@@ -253,7 +118,6 @@ public class DisplayManager
 		if(mEffectTimer == null)
 			mEffectTimer = Bukkit.getScheduler().runTaskTimer(mPlugin, new EffectTimer(), EFFECT_DELAY, EFFECT_DELAY);
 		
-		return effect.id;
 	}
 	
 	public void removeEffect(int id)
@@ -266,7 +130,7 @@ public class DisplayManager
 		}
 	}
 	
-	public void clearEffects()
+	 void clearEffects()
 	{
 		mEffects.clear();
 		
@@ -300,19 +164,20 @@ public class DisplayManager
 	
 	private void spawnParticles(Location location, String effect, float offX, float offY, float offZ, float speed, int count)
 	{
+
 		PacketContainer packet = mLib.createPacket(PacketType.Play.Server.WORLD_PARTICLES);
-		packet.getStrings().write(0, effect);
-		packet.getFloat().write(0, (float)location.getX());
-		packet.getFloat().write(1, (float)location.getY());
-		packet.getFloat().write(2, (float)location.getZ());
-		
-		packet.getFloat().write(3, offX);
-		packet.getFloat().write(4, offY);
-		packet.getFloat().write(5, offZ);
-		
-		packet.getFloat().write(6, speed);
-		packet.getIntegers().write(0, count);
-		
+        EnumWrappers.Particle particle = EnumWrappers.Particle.getByName(effect);
+        if(Minigames.plugin.isDebugging())MinigameUtils.debugMessage(packet.toString());
+        packet.getParticles().write(0,particle);
+		packet.getIntegers().write(0,count);
+		packet.getFloat()
+                .write(0, (float)location.getX())
+                .write(1, (float)location.getY())
+                .write(2, (float)location.getZ())
+		        .write(3, offX)
+                .write(4, offY)
+                .write(5, offZ)
+                .write(6, speed);
 		try
 		{
 			mLib.sendServerPacket(mPlayer, packet, false);
@@ -323,7 +188,7 @@ public class DisplayManager
 		}
 	}
 	
-	public static void initialize(Plugin plugin)
+	 static void initialize(Plugin plugin)
 	{
 		Validate.isTrue(mLib == null);
 		
@@ -333,7 +198,7 @@ public class DisplayManager
 		mPlugin = plugin;
 	}
 	
-	public static DisplayManager getDisplayManager(Player player)
+	 static DisplayManager getDisplayManager(Player player)
 	{
 		DisplayManager manager = mAllManagers.get(player);
 		if(manager == null)
@@ -363,15 +228,7 @@ public class DisplayManager
 			{
 				if(manager.mShowBossBar)
 				{
-					Bukkit.getScheduler().runTaskLater(mPlugin, new Runnable()
-					{
-						@Override
-						public void run()
-						{
-							int value = (int)Math.min(Math.max(manager.mCurrentBossValue * 200, 1), 200);
-							manager.spawnFakeDragon(manager.mCurrentBossText, value);
-						}
-					}, 5);
+					manager.bar.setVisible(true);
 				}
 			}
 		}
@@ -379,13 +236,13 @@ public class DisplayManager
 	
 	private static class Effect
 	{
-		public String type;
-		public Location location;
-		public int id;
-		public int count;
-		public float spread;
-		public int emits;
-		public float speed;
+		 String type;
+		Location location;
+		 int id;
+		 int count;
+		 float spread;
+		 int emits;
+		 float speed;
 	}
 	
 	private class EffectTimer implements Runnable
